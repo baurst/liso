@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  liso_dev:
+    build:
+      context: ../
+      dockerfile: .devcontainer/Dockerfile.dev
+      network: host
+
+    image: liso_dev:latest
+
+    user: "${UID_GID}"
+    working_dir: /home/vscode/workspace/liflow2/liso
+    network_mode: host
+    shm_size: 32G
+
+    # Depending on the compose version you have to use runtime nvidia config or deploy config
+    # runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+
+    volumes:
+      # Forwards the local Docker socket to the container.
+      - /var/run/docker.sock:/var/run/docker-host.sock
+      # Update this to wherever you want VS Code to mount the folder of your project
+      - ..:/home/vscode/workspace/liflow2/liso:cached
+      - /mnt/:/mnt/

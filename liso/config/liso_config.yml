@@ -1,0 +1,816 @@
+default:
+  set_detect_anomaly: False
+  seed: 0
+  nms_iou_threshold: 0.1
+  checkpoint:
+    save_model_every: 5000
+  validation:
+    val_every_n_steps: 5000
+    num_val_steps: 500
+    num_val_on_train_steps: 125
+    obj_is_moving_velocity_thresh: 0.1
+  logging:
+    log_interval: 1
+    img_log_interval: 5000
+    max_log_img_batches: 4
+    confidence_threshold_box_gif_summary: 0.35
+  data:
+    train_on_box_source: "mined"
+    downsample_dataset_keep_ratio: 1.0
+    force_redo_box_mining: True
+    tracking_cfg:
+      max_augm_db_size_mb: 251
+      align_predicted_boxes_using_flow: False
+      tracker_model: flow_tracker
+      track_matching_threshold_m: 1.0
+      min_points_in_box: 20
+      max_num_boxes_after_nms: 100
+      max_num_boxes_before_nms: 1000
+      fit_box_to_points:
+        fit_rot: False
+        fit_pos: True
+        fitting_dims_bloat_factor: 1.1
+      drop_boxes_on_bev_boundaries: True
+      flow_cluster_detector_min_obj_speed_mps: 1.0
+      flow_tracker:
+        track_forward_and_backward: True
+        use_track_smoothing: True
+        track_smoothing_method: "jerk"
+        min_dist_for_track_smoothing: 3.0
+      flow_cluster_detector_ignore_min_box_size_limits: False
+      flow_cluster_detector_ignore_max_box_size_limits: False
+      min_track_age: 4
+      use_pred_future_box_poses_for_matching: True
+      bootstrap_detector: flow_cluster_detector
+      flow_cluster_detector_min_travel_dist_filter_m: 3.0 # an object track shorter than this will be discarded
+      box_refinement_dims_quantile: 0.8
+    use_lidar_intensity: True
+    non_rigid_flow_threshold_mps: 0.5
+    use_ground_for_network: False
+    waymo_downsample_factor: 5
+    use_skip_frames: "both"
+    augmentation:
+      active: True
+      rotation:
+        max_rot_deg: 90.0
+      translation:
+        max_sensor_pos_offset_m: 5.0
+      boxes:
+        active: False
+        max_num_objs: 15
+        start_augm_at_step: 0
+        min_artificial_obj_velo: 1.0
+        max_artificial_obj_velo: 3.0
+        max_scale_delta: 0.2
+        max_points_dropout: 0.25
+        use_raydrop_augm: False
+        min_box_size:
+          length: 2.5
+          width: 1.5
+        min_obj_center_dist_from_occupied_pillars_m: 2.0
+    paths:
+      av2:
+        local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/av2/sensor"
+        slim_flow:
+          slim_bev_120m:
+            local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/av2_slim_flow/preds"
+        box_dbs:
+          local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/mined_dbs/av2"
+      nuscenes:
+        local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/nuscenes"
+        pure_dataset_root:
+          local: "/mnt/LISO_DATA_DIR/nuscenes"
+        box_dbs:
+          local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/mined_dbs/nuscenes"
+        slim_flow:
+          slim_bev_120m:
+            local: "/mnt/LISO_DATA_DIR/flow_slim/nuscenes_inference_920/6762e/20230404_192005/preds"
+      waymo:
+        local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/waymo"
+        ground_segmentation:
+          local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/waymo_ground_labels"
+        poses_kiss_icp_kitti_lidar:
+          local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/waymo_kiss_icp_poses"
+        flow_gt:
+          local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/waymo_flow_gt"
+        box_dbs:
+          local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/mined_dbs/waymo"
+        slim_flow:
+          slim_bev_120m:
+            local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/waymo_slim_flow/95611/20230926_105925/preds"
+      kitti:
+        local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/kitti"
+        pure_dataset_root:
+          local: "/mnt/LISO_DATA_DIR/datasets/datasets_raw/kitti/kitti_object"
+        box_dbs:
+          local: "/mnt/LISO_DATA_DIR/selfsupervised_OD/mined_dbs/kitti"
+        slim_flow:
+          slim_bev_120m:
+            local: "/mnt/LISO_DATA_DIR/flow_slim/kitti_raw_inference_920/e8883/20230415_130852/preds"
+    source: "toy"
+    flow_source: "gt"
+    odom_source: "gt"
+    ground_height_map:
+      ground_threshold: -1.5
+    limit_pillar_height: True
+    z_pillar_cutoff_value: 10.0
+    pillar_height_range_m: !tuple
+      - -2.0
+      - 1.0
+    num_workers: 4
+    batch_size: 2
+    img_grid_size: !tuple
+    - 64
+    - 64
+    bev_range_m: !tuple
+    - 40.0
+    - 40.0
+    shapes:
+      name: "boxes"
+  mask_rendering:
+    dtype: float64
+    softness_fun: "cauchy"
+    pred_sigmoid_slope: 15.0
+    obj_dim_scale_buffer: 0.25
+  optimization:
+    use_lr_decay: True
+    num_training_steps: 350000
+    learning_rate: 0.001
+    abs_num_warmup_steps: 2000
+    rounds:
+      active: False
+      raw_or_tracked: "tracked"
+      confidence_threshold_mined_boxes: 0.2
+      confidence_threshold_for_augmentation_strictness_factor: 1.5
+      steps_per_round: 30000
+      drop_net_weights_every_nth_round: 2
+  loss:
+    pointrcnn_loss:
+      active: False
+      weight: 1.0
+    pointpillars_loss:
+      active: False
+      weight: 1.0
+    supervised:
+      supervised_on_clusters:
+        active: False
+        weight: 1.0
+        attrs: !tuple
+          - pos
+          - dims
+          - rot
+          - probs
+      hungarian:
+        prob_loss: "focal"
+        active: False
+        weight: 1.0
+        attrs: !tuple
+          - pos
+          - dims
+          - rot
+          - probs
+      centermaps:
+        attrs: !tuple
+          - pos
+          - dims
+          - rot
+          - probs
+        active: False
+        confidence_target: "gaussian"
+        weight: 1.0
+  network:
+    name: "centerpoint"
+    transfusion:
+      out_size_factor: 4
+      num_pred_boxes: 200
+    centerpoint:
+      reduce_receptive_field: 0
+      hid_dim: 64
+      use_baseline_parameters: True
+      channel_reduction_factor: 1
+      batch_norm:
+        kwargs:
+          affine: True
+          track_running_stats: True
+  box_prediction:
+    seperate_decoders: False
+    position_representation:
+      method: "global_relative"
+      num_box_pos_dims: 3
+      box_z_pos_prior_max: -0.5
+      box_z_pos_prior_min: -1.5
+    rotation_representation:
+      method: "direct"
+      regularization: None
+      regul_weight: 0
+      norm_vector_len: False
+      regularize_limit_angle_to_pi: False
+    dimensions_representation:
+      method: "predict_aspect_ratio"
+      box_len_prior_max: 8.0
+      box_len_prior_min: 2.0
+      box_height_prior_max: 3.0
+      box_height_prior_min: 1.0
+      box_aspect_ratio: 0.5
+    output_modification:
+      pos: "pred"
+      dims: "pred"
+      rot: "pred"
+      probs: "pred"
+    activations:
+      pos: "none"
+      dims: "sigmoid"
+      rot: "none"
+      probs: "none"
+    gradient_scaling:
+      pos: 1
+      dims: 1
+      rot: 1
+      probs: 1
+  svd_backend: "symm_ortho"
+  SLIM:
+    optimizer: "rmsprop"
+    batch_size: 1 # BAURST CHANGED FOR PYTORCH LOADER
+    seed: 0
+    set_detect_anomaly: True
+    export_kitti_sf_predictions: True
+    export_valid: True
+    iterations:
+      pretrain: 0
+      train: 150_000 # 1_000_000
+      train_metrics_every: 1
+      eval_every: 1000
+      full_eval_every: 5_000
+    layers:
+      convolution:
+        type: normal
+      batch_normalization:
+        renorm: True
+      activation:
+      - relu
+    learning_rate:
+      initial: 0.0001
+      step_decay:
+        decay_ratio: 0.5
+        step_length: 60000
+      warm_up:
+        initial: 0.01
+        step_length: 2000
+    losses:
+      unsupervised:
+        fw_bw_static_trafo_penalty_factor: 1.0
+        knn_loss_penalty_factor: 1.0
+        artificial_labels:
+          use_static_aggr_flow: True
+          cross_entropy_penalty: 0.0
+          weight_mode: constant
+          gauss_widths: null
+          knn_mode: point
+        knn_on_dynamic_penalty: 0.0
+        knn_on_static_penalty: 0.0
+        knn_dist_measure: point
+        knn_loss:
+          L1_delta: 0.0
+          drop_outliers__perc: 0.0
+          fov_mode: mask_close_fov
+          range_based_weights:
+            slope_sign: -1.0 # HACK: cannot pass negative cli args...
+            weight_slope: 0.0
+            weight_at_range_0: 0.0
+            max_weight_clip_at: 100.0
+            min_weight_clip_at: 1.0
+        opposite_flow_penalty_factor: 0.0
+        static_flow_penalty_factor: 1.0
+        temporal_cls_consistency_penalty_factor: 0.0
+        use_epsilon_for_weighted_pc_alignment: False
+        num_neighbors_smoothness_penalty: 5
+        non_rigid_flow_must_mean_high_dynamicness_factor: 0.0
+    model:
+      name: "pillar"
+      dropout_rate: 0
+      raft_fnet_norm: "instance_affine"
+      name: "raft" # raft specific configs
+      feature_downsampling_factor: 8 # raft specific configs
+      learn_upsampling: False # False if you want bilinear # raft specific configs
+      num_iters: 6 # raft specific configs
+      num_pred_iters: 6 # prior to the addidtion of training flag this never had any effect and was always equal to num_iters # raft specific configs
+      flow_maps_archi: "single" # raft specific configs
+      corr_cfg: # raft specific configs
+        module: all # or "kernel" # raft specific configs
+        sampler: "bilinear" # or nn for nearest_neighbor # raft specific configs
+        search_radius: 3 # raft specific configs
+        num_levels: 4 # raft specific configs
+      output_modification:
+        disappearing_logit: off
+        static_logit: net
+        dynamic_logit: net
+        ground_logit: off
+        dynamic_flow: net
+        static_flow: net
+        dynamic_flow_grad_scale: 1.0
+      predict_weight_for_static_aggregation: off
+      use_static_aggr_flow_for_aggr_flow: False
+      dynamic_flow_is_non_rigid_flow: False
+      head:
+        activation:
+        - leaky_relu
+        - 0.1
+        filters: 128
+        nbr_layers: 3
+      point_pillars:
+        inf_distance: 1000.0
+        max_points_per_pillar: 32
+        nbr_point_feats: 64
+        # nbr_pillars: !tuple
+        # - 640
+        # - 640
+        point_feat_mask: !tuple
+        - True
+        - True
+        - True
+        - False
+        - True
+        - True
+        - True
+        - False
+        - True
+        - True
+        - False
+        voxel_feat_mask: !tuple
+        - False
+        - False
+        - False
+        - False
+        - False
+        - False
+        - False
+        - False
+        - False
+        - False
+        - False
+      u_net:
+        final_scale: 2
+      use_correlation_layer: False
+    phases:
+      train:
+        dataset: train
+        mode: unsupervised
+
+liso:
+  meta_cfgs:
+  - train_250k_steps
+  - kiss_icp_odom
+  - tcr_training_signal_only
+  - raydrop_augm
+  - train_on_pseudo_gt
+  - box_augm
+  - bev_100m_512
+  data:
+    flow_source: slim_bev_120m
+    tracking_cfg:
+      flow_tracker:
+        track_smoothing_method: jerk
+    waymo_downsample_factor: 10
+  optimization:
+    rounds:
+      confidence_threshold_mined_boxes: 0.3
+
+drop_weights_every_round:
+  optimization:
+    rounds:
+      active: True
+      drop_net_weights_every_nth_round: 1
+
+train_on_true_gt:
+  data:
+    train_on_box_source: "gt"
+
+train_on_pseudo_gt:
+  data:
+    train_on_box_source: "mined"
+
+one_worker:
+  data:
+    num_workers: 0
+
+eight_workers:
+  data:
+    num_workers: 8
+
+tcr_training_signal_only:
+  meta_cfgs:
+    - rounds_30k
+    - box_augm
+    - sv_clusters
+
+box_augm:
+  data:
+    augmentation:
+      boxes:
+        active: True
+
+no_box_augm:
+  data:
+    augmentation:
+      boxes:
+        active: False
+
+raydrop_augm:
+  data:
+    augmentation:
+      boxes:
+        use_raydrop_augm: True
+
+use_lidar_intensity:
+  data:
+    use_lidar_intensity: True
+
+flow_cluster_detector:
+  network:
+    name: "flow_cluster_detector"
+
+rounds_20k:
+  optimization:
+    rounds:
+      active: True
+      steps_per_round: 20000
+
+rounds_30k:
+  optimization:
+    rounds:
+      active: True
+      steps_per_round: 30000
+
+sv_clusters:
+  loss:
+    supervised:
+      supervised_on_clusters:
+        active: True
+
+no_track_smoothing:
+  data:
+    tracking_cfg:
+      flow_tracker:
+        use_track_smoothing: False
+
+net_use_ground:
+  data:
+    use_ground_for_network: True
+
+no_augmentation:
+  data:
+    augmentation:
+      active: False
+
+kiss_icp_odom:
+  data:
+    odom_source: "kiss_icp"
+
+gt_odom:
+  data:
+    odom_source: "gt"
+
+verbose_image_logging:
+  logging:
+    img_log_interval: 25
+    max_log_img_batches: 4
+
+log_often_but_small:
+  validation:
+    val_every_n_steps: 100
+    num_val_steps: 4
+    num_val_on_train_steps: 4
+
+no_val:
+  validation:
+    val_every_n_steps: 50000
+    num_val_steps: 1
+    num_val_on_train_steps: 1
+
+no_warmup:
+  optimization:
+    use_lr_decay: True
+    abs_num_warmup_steps: 1
+
+warmup_3k:
+  optimization:
+    abs_num_warmup_steps: 3000
+
+nuscenes:
+  data:
+    source: nuscenes
+
+waymo:
+  data:
+    source: waymo
+
+av2:
+  data:
+    source: av2
+
+kitti:
+  data:
+    source: kitti
+
+bev_100m_512:
+  data:
+    img_grid_size: !tuple
+    - 512
+    - 512
+    bev_range_m: !tuple
+    - 100.0
+    - 100.0
+
+slim_resolution:
+  data:
+    img_grid_size: !tuple
+      - 640
+      - 640
+    bev_range_m: !tuple
+      - 70.0
+      - 70.0
+
+slim_higher_resolution:
+  data:
+    img_grid_size: !tuple
+      - 920
+      - 920
+    bev_range_m: !tuple
+      - 100.0
+      - 100.0
+
+slim_highest_resolution:
+  data:
+    img_grid_size: !tuple
+      - 920
+      - 920
+    bev_range_m: !tuple
+      - 120.0
+      - 120.0
+
+1024_resolution:
+  data:
+    img_grid_size: !tuple
+    - 1024
+    - 1024
+
+512_resolution:
+  data:
+    img_grid_size: !tuple
+    - 512
+    - 512
+
+echo_gt_net:
+  network:
+    name: "echo_gt"
+
+transfusion_sv:
+  loss:
+    supervised:
+      centermaps:
+        active: True
+        weight: 1.0
+      hungarian:
+        active: True
+        weight: 0.25
+
+transfusion:
+  meta_cfgs:
+  - predict_rot_as_vector
+  network:
+    name: "transfusion"
+  box_prediction:
+    position_representation:
+      method: "global_absolute"
+    dimensions_representation:
+      method: "predict_abs_size"
+    activations:
+      pos: "none"
+      rot: "none"
+      dims: "none"
+      probs: "none"
+  optimization:
+    learning_rate: 0.0001
+
+pointrcnn:
+  meta_cfgs:
+  - net_use_ground
+  network:
+    name: "pointrcnn"
+  loss:
+    pointrcnn_loss:
+      active: True
+  optimization:
+    learning_rate: 0.005
+
+pointpillars:
+  meta_cfgs:
+  - net_use_ground
+  network:
+    name: "pointpillars"
+  loss:
+    pointpillars_loss:
+      active: True
+  optimization:
+    learning_rate: 0.001
+
+centerpoint:
+  meta_cfgs:
+  - predict_absolute_box_size
+  - predict_rot_as_vector
+  logging:
+    max_log_img_batches: 2
+  network:
+    name: "centerpoint"
+  box_prediction:
+    seperate_decoders: True
+    position_representation:
+      method: "local_relative_offset"
+    activations:
+      pos: "tanh"
+      probs: "none"
+
+train_250k_steps:
+  optimization:
+    num_training_steps: 250000
+
+batch_size_four:
+  data:
+    batch_size: 4
+  optimization:
+    num_training_steps: 150000
+    abs_num_warmup_steps: 1000
+    rounds:
+      steps_per_round: 15000
+  checkpoint:
+    save_model_every: 2500
+  validation:
+    val_every_n_steps: 2500
+  logging:
+    img_log_interval: 2500
+
+val_every_5k:
+  validation:
+    val_every_n_steps: 5000
+  checkpoint:
+    save_model_every: 5000
+
+batch_size_three:
+  data:
+    batch_size: 3
+  optimization:
+    num_training_steps: 150000
+
+batch_size_two:
+  data:
+    batch_size: 2
+  optimization:
+    num_training_steps: 150000
+
+batch_size_one:
+  data:
+    batch_size: 1
+  optimization:
+    num_training_steps: 150000
+
+supervised_centermaps:
+  loss:
+    supervised:
+      centermaps:
+        active: True
+  box_prediction:
+    activations:
+      probs: "none"
+
+supervised_hungarian:
+  loss:
+    reconstruction:
+      active: False
+    supervised:
+      hungarian:
+        active: True
+
+predict_absolute_box_size:
+  box_prediction:
+    dimensions_representation:
+      method: "predict_abs_size"
+    activations:
+      dims: "softplus"
+
+predict_rot_as_vector:
+  box_prediction:
+    rotation_representation:
+      method: "vector"
+      regularization: rot_vec_on_unit_circle
+      regul_weight: 0.0001
+
+predict_rot_as_classification:
+  box_prediction:
+    rotation_representation:
+      method: "class_bins"
+      regularization: None
+
+slim_sota_us:
+  SLIM:
+    losses:
+      unsupervised:
+        artificial_labels:
+          cross_entropy_penalty: 0.1
+        knn_on_dynamic_penalty: 1.0
+        knn_on_static_penalty: 1.0
+
+slim_simple_knn_training:
+  meta_cfgs:
+  - slim_set_cls_output_all_static
+  SLIM:
+    losses:
+      unsupervised:
+        opposite_flow_penalty_factor: 0.0
+        fw_bw_static_trafo_penalty_factor: 0.0
+        static_flow_penalty_factor: 0.0
+        knn_loss_penalty_factor: 1.0
+
+slim_sota_us_more_simple_knn_like:
+  SLIM:
+    losses:
+      unsupervised:
+        knn_loss_penalty_factor: 1.0
+        artificial_labels:
+          cross_entropy_penalty: 0.1
+        knn_on_dynamic_penalty: 1.0
+        knn_on_static_penalty: 1.0
+        fw_bw_static_trafo_penalty_factor: 0.0
+        static_flow_penalty_factor: 0.0
+
+slim_sota_net:
+  SLIM:
+    model:
+      predict_weight_for_static_aggregation: sigmoid
+      use_static_aggr_flow_for_aggr_flow: True
+
+slim_no_static_aggr:
+  SLIM:
+    model:
+      use_static_aggr_flow_for_aggr_flow: False
+
+slim_no_stataggr_weight:
+  SLIM:
+    model:
+      predict_weight_for_static_aggregation: off
+
+slim_nuscenes:
+  meta_cfgs:
+  - slim_low_res_loss_cfg
+  - nuscenes
+
+slim_waymo:
+  meta_cfgs:
+  - slim_low_res_loss_cfg
+  - waymo
+
+slim_av2:
+  meta_cfgs:
+  - slim_low_res_loss_cfg
+  - av2
+
+slim_kitti:
+  meta_cfgs:
+    - slim_low_res_loss_cfg
+    - kitti
+
+slim_low_res_loss_cfg:
+  SLIM:
+    losses:
+      unsupervised:
+        knn_loss:
+          drop_outliers__perc: 5.0
+
+slim_set_cls_output_all_static:
+  SLIM:
+    model:
+      output_modification:
+        static_logit: on
+        dynamic_logit: off
+        ground_logit: off
+        dynamic_flow: zero
+
+slim_RAFT:
+  network:
+    name: "slim"
+  SLIM:
+    optimizer: "rmsprop" # save some memory
+    batch_size: 1 # changed from default
+    model:
+      name: "raft"
+      feature_downsampling_factor: 8
+      learn_upsampling: False # False if you want bilinear
+      num_iters: 6
+      num_pred_iters: 6 # prior to the addidtion of training flag this never had any effect and was always equal to num_iters
+      flow_maps_archi: "single"
+      corr_cfg:
+        module: all # or "kernel"
+        sampler: "bilinear" # or nn for nearest_neighbor
+        search_radius: 3
+        num_levels: 4
+      u_net: # we dont use unet, but we need this final_scale in the unet config for HEAD Decoder
+        final_scale: 1
