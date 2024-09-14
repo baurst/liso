@@ -1,0 +1,51 @@
+default:
+  log_dir_: /home/baurst/data_dump
+  optimizer:
+    name: "rmsprop"
+    learning_rate: 0.001
+  random_seed: 0
+  log_everything: True
+  data:
+    data_dirs:
+      carla: /data/tfrecords
+    bev_extent: !tuple
+    - -35.0
+    - -35.0
+    - 35.0
+    - 35.0
+
+special_data_config:
+  data:
+    data_dirs:
+      carla: /some/other/place
+
+adam:
+  meta_cfgs:
+  - special_data_config
+  optimizer:
+    learning_rate: 0.5
+    name: "adam"
+
+large_bev:
+  data:
+    data_dirs:
+      carla: /data/tfrecords
+    bev_extent: !tuple
+    - -40.0
+    - -40.0
+    - 40.0
+    - 40.0
+
+hard_mode:
+  meta_cfgs:
+  - large_bev
+  - adam
+  random_seed: 666
+  log_everything: False
+
+super_hard_mode:
+  meta_cfgs:
+  - hard_mode
+  optimizer:
+    name: "best_opt"
+  random_seed: 333

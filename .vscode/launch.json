@@ -1,0 +1,363 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "KITTI OBJ CREATE",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/datasets/kitti/create_kitti_object.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--target_dir",
+                "/mnt/LISO_DATA_DIR/selfsupervised_OD/kitti",
+                "--kitti_object_root",
+                "/mnt/LISO_DATA_DIR/datasets/datasets_raw/kitti/kitti_object",
+                "--kitti_raw_root",
+                "/mnt/LISO_DATA_DIR/datasets/datasets_raw/kitti/kitti_raw",
+            ]
+        },
+        {
+            "name": "KITTI RAW CREATE",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/datasets/kitti/create_kitti_raw.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--target_dir",
+                "/mnt/LISO_DATA_DIR/selfsupervised_OD/kitti",
+                "--kitti_raw_root",
+                "/mnt/LISO_DATA_DIR/datasets/datasets_raw/kitti/kitti_raw"
+            ]
+        },
+        {
+            "name": "KITTI Tracking CREATE",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/datasets/kitti/create_kitti_tracking.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--target_dir",
+                "/mnt/LISO_DATA_DIR/selfsupervised_OD/kitti",
+                "--kitti_tracking_root",
+                "/mnt/LISO_DATA_DIR/datasets/datasets_raw/kitti/kitti_tracking/training"
+            ]
+        },
+        {
+            "name": "Nuscenes CREATE",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/datasets/nuscenes/create.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--target_dir",
+                "/tmp/nusc_dummy",
+                "--nusc_root",
+                "/mnt/LISO_DATA_DIR/nuscenes",
+            ]
+        },
+        {
+            "name": "AV2 CREATE",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/datasets/argoverse2/create.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--target_dir",
+                "/tmp/av2_dummy",
+                "--av2_root",
+                "/mnt/LISO_DATA_DIR/selfsupervised_OD/argoverse/av2/sensor",
+            ]
+        },
+        {
+            "name": "Train SLIM KITTI",
+            "type": "debugpy",
+            "request": "launch",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1",
+                "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:512",
+            },
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                "--fast-test",
+                "--summary-dir",
+                "/tmp/slim",
+                "-c",
+                "slim_sota_net",
+                "slim_sota_us",
+                "slim_kitti",
+                "slim_RAFT",
+                "slim_simple_knn_training",
+                "batch_size_one",
+                "slim_resolution",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Train SLIM NUSCENES",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+                "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:512",
+            },
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                //"--fast-test",
+                "--summary-dir",
+                "/tmp/slim",
+                "-c",
+                "slim_nuscenes",
+                "slim_RAFT",
+                "slim_simple_knn_training",
+                "batch_size_one",
+                "slim_resolution",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Train SLIM WAYMO",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+                "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:512",
+            },
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                //"--fast-test",
+                "--summary-dir",
+                "/tmp/slim",
+                "-c",
+                "slim_waymo",
+                "slim_RAFT",
+                "slim_simple_knn_training",
+                "batch_size_one",
+                "slim_resolution",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Train SLIM AV2",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+                "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:512",
+            },
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                "--fast-test",
+                "--summary-dir",
+                "/tmp/slim",
+                "-c",
+                "slim_av2",
+                "slim_RAFT",
+                "slim_simple_knn_training",
+                "batch_size_one",
+                "slim_resolution",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Train SLIM WAYMO",
+            "type": "debugpy",
+            "request": "launch",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+                "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:512",
+            },
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                "--summary-dir",
+                "/tmp/slim",
+                "-c",
+                "slim_simple_knn_training",
+                "slim_waymo",
+                "use_lidar_intensity",
+                "slim_RAFT",
+                "batch_size_one",
+                "slim_resolution"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "SLIM INFERENCE NUSCENES",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/lisocli.py",
+            "args": [
+                "--inference-only",
+                "--override-summary-dir",
+                "--summary-dir",
+                "/tmp/slim_dump",
+                "--load_checkpoint",
+                "/mnt/LISO_DATA_DIR/.../xyz.pth",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "SLIM INFERENCE KITTI",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1"
+            },
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                "--inference-only",
+                "--override-summary-dir",
+                "--summary-dir",
+                "/tmp/kitti_inference_920",
+                "--load_checkpoint",
+                "/mnt/LISO_DATA_DIR/.../checkpoints/xyz.pth",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "SLIM INFERENCE AV2",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1"
+            },
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                "--inference-only",
+                "--override-summary-dir",
+                "--summary-dir",
+                "/tmp/av2_inference_920",
+                "--load_checkpoint",
+                "/mnt/LISO_DATA_DIR/.../xyz.pth",
+                "--world_size",
+                "10",
+                "--worker_id",
+                "8"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "SLIM INFERENCE WAYMO",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/slim/cli.py",
+            "args": [
+                "--inference-only",
+                "--override-summary-dir",
+                "--summary-dir",
+                "/tmp/slim_dump",
+                "--load_checkpoint",
+                "/mnt/LISO_DATA_DIR/.../xyz.pth",
+                "-kv",
+                "data",
+                "waymo_downsample_factor",
+                "1"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "CenterPoint Supervised WAYMO",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/kabsch/liso_cli.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--fast-test",
+                "--summary-dir",
+                "/tmp/kabsch",
+                "-c",
+                "waymo",
+                "bev_100m_512",
+                "centerpoint",
+                "supervised_centermaps",
+                "batch_size_four",
+            ]
+        },
+        {
+            "name": "Transfusion Supervised WAYMO",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/kabsch/liso_cli.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--fast-test",
+                "-c",
+                "waymo",
+                "bev_100m_512",
+                "transfusion",
+                "supervised_centermaps",
+                "transfusion_sv",
+                "val_every_5k",
+                "train_on_true_gt",
+            ]
+        },
+        {
+            "name": "LISO: Centerpoint AV2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/kabsch/liso_cli.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--fast-test",
+                "-c",
+                "av2",
+                "bev_100m_512",
+                "centerpoint",
+                "batch_size_four",
+                "liso"
+            ]
+        },
+        {
+            "name": "LISO: Pointpillars KITTI",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/kabsch/liso_cli.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--fast-test",
+                "-c",
+                "av2",
+                "bev_100m_512",
+                "pointpillars",
+                "batch_size_four",
+                "liso"
+            ]
+        },
+        {
+            "name": "Custom Checkpoint Eval",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/eval/eval_ours.py",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1",
+            },
+            "args": [
+                "--load_checkpoint",
+                "/mnt/LISO_DATA_DIR/.../checkpoints/xyz.pth",
+                "--summary-dir",
+                "/tmp/eval_trial",
+            ],
+        },
+        {
+            "name": "Run Tracker on checkpoint",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/liso/tracker/tracking.py",
+            "args": [
+                "--load_checkpoint",
+                "/mnt/LISO_DATA_DIR/.../checkpoints/xyz.pth",
+                "--summary-dir",
+                "/tmp/eval_trial",
+            ],
+        },
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+    ]
+}

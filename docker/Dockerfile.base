@@ -1,0 +1,105 @@
+FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive TZ=Europe/Berlin apt-get -y install tzdata
+
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends gnupg2 \
+    curl \
+    ca-certificates \
+    git \
+    python3-opencv \
+    git-lfs \
+    nano \
+    vim \
+    libgl1 \
+    libglib2.0-0 \
+    build-essential \
+    rsync \
+    tmux
+
+ENV CONDA_DIR=/opt/conda
+RUN curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh --output miniconda.sh && \
+    /bin/bash miniconda.sh -b -p $CONDA_DIR
+ENV PATH=$PATH:$CONDA_DIR/bin
+
+RUN echo "$PWD"
+
+ENV CONDA_ALWAYS_YES="true"
+
+RUN --mount=type=cache,target=/opt/conda/pkgs export CONDA_ALWAYS_YES="true" \
+    && conda update -n base conda \
+    && conda install -n base conda-libmamba-solver \
+    && conda config --set solver libmamba \
+    && conda create --name liso python=3.8.15 pip setuptools \
+    && eval "$(conda shell.bash hook)" \
+    && conda install -n liso pytorch==1.11.0 torchvision==0.12.0 cudatoolkit=11.3 -c pytorch \
+    && conda install -n liso -c fvcore -c iopath -c conda-forge fvcore iopath \
+    && conda install -n liso pytorch3d=0.7.0 -c pytorch3d
+
+RUN . $CONDA_DIR/etc/profile.d/conda.sh && conda activate liso && pip install \
+    black==22.1.0 \
+    mypy==0.931 \
+    omegaconf==2.1.1 \
+    munch==2.5.0 \
+    scikit-learn==0.24.2 \
+    tensorboard==2.8.0 \
+    Pillow==9.4.0 \
+    tqdm==4.62.3 \
+    numpy==1.18.5 \
+    pyyaml==6.0 \
+    scikit-image==0.19.2 \
+    matplotlib==3.5.3 \
+    scipy==1.5.4 \
+    Shapely==1.8.1 \
+    nuscenes-devkit==1.1.9 \
+    numba==0.53.0 \
+    spconv-cu113==2.3.2 \
+    openmim==0.3.5 \
+    protobuf==3.20.1 \
+    kiss-icp==0.2.10 \
+    git+https://github.com/baurst/pykitti#egg=pykitti \
+    git+https://github.com/u1234x1234/pynanoflann.git#egg=pynanoflann
+
+RUN . $CONDA_DIR/etc/profile.d/conda.sh && conda activate liso && mim install mmcv-full==1.7.1
+RUN . $CONDA_DIR/etc/profile.d/conda.sh && conda activate liso && mim install mmdet==2.27.0
+RUN . $CONDA_DIR/etc/profile.d/conda.sh && conda activate liso && mim install mmsegmentation==0.30.0
+
+RUN --mount=type=cache,target=/opt/conda/pkgs export CONDA_ALWAYS_YES="true" \
+    && conda create --name av2 python=3.8.15 \
+    && conda install -n av2 -c pytorch -c conda-forge conda-forge/label/rust_dev::rust av \
+    click \
+    joblib \
+    kornia \
+    matplotlib-base \
+    maturin \
+    nox \
+    numba \
+    numpy \
+    openblas \
+    opencv \
+    openssl \
+    pandas \
+    pip \
+    polars \
+    pyarrow \
+    pyproj \
+    rich \
+    scipy \
+    pytorch \
+    tqdm \
+    universal_pathlib \
+    shapely
+
+RUN . $CONDA_DIR/etc/profile.d/conda.sh && conda activate av2 && pip install \
+    kiss-icp==0.2.10 \
+    av2 \
+    git+https://github.com/JonathonLuiten/TrackEval.git
+
+ENV PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+
+CMD [ "sleep", "infinity" ]
