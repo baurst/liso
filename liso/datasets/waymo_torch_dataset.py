@@ -305,6 +305,9 @@ class WaymoDataset(LidarDataset):
         from kiss_icp.config import KISSConfig
         from kiss_icp.kiss_icp import KissICP
 
+        self.initialize_loader_saver_if_necessary()
+        self.kiss_icp_poses_path_wo_ext.parent.mkdir(exist_ok=True, parents=True)
+
         kiss_config = KISSConfig()
         kiss_config.mapping.voxel_size = 0.01 * kiss_config.data.max_range
         for sequence in tqdm(self.label_infos, disable=False):
